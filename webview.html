@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder WebView</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #121813;
+            --surface: rgba(28, 40, 30, 0.85);
+            --surface-border: rgba(80, 110, 85, 0.3);
+            --primary: #d96c06;
+            --primary-hover: #ff8b20;
+            --text-main: #e8ede9;
+            --text-muted: #8a9c8f;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: transparent; /* Importante per l'integrazione in chat */
+            color: var(--text-main);
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--surface-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .header-mini {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 10px;
+        }
+
+        .logo-mini {
+            background: var(--primary);
+            padding: 5px;
+            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-mini svg {
+            width: 16px;
+            height: 16px;
+            fill: #fff;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+        }
+
+        /* Result Styling */
+        .markdown-content {
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        .markdown-content h3 {
+            color: #fff;
+            margin: 1.2rem 0 0.5rem;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .markdown-content p { margin-bottom: 1rem; }
+        .markdown-content strong { color: var(--primary); }
+
+        .markdown-content ul {
+            padding-left: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .markdown-content li { margin-bottom: 0.4rem; }
+
+        blockquote {
+            border-left: 3px solid var(--primary);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-muted);
+            font-style: italic;
+            background: rgba(217, 108, 6, 0.05);
+            padding: 10px 15px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        /* Footer Interaction */
+        .footer-tools {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .btn-action {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--surface-border);
+            color: var(--text-main);
+            padding: 5px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="header-mini">
+                <div class="logo-mini">
+                    <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13.5H5.5L12 6.5z"/></svg>
+                </div>
+                <h2>Pathfinder Report</h2>
+            </div>
+
+            <div id="result-content" class="markdown-content">
+                <!-- Injected via JS -->
+                <p>In attesa di dati ambientali...</p>
+            </div>
+
+            <div class="footer-tools">
+                <span>COORD: 45.4642° N, 9.1900° E</span>
+                <button class="btn-action" onclick="window.print()">Salva Report</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funzione per estrarre i parametri dall'URL
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                res: params.get('res')
+            };
+        }
+
+        function formatMarkdown(text) {
+            if (!text) return "Nessun dato ricevuto.";
+            
+            return text
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/### (.*?)(<br>|<\/p>)/g, '<h3>$1</h3>$2')
+                .replace(/> (.*?)(<br>|<\/p>)/g, '<blockquote>$1</blockquote>$2')
+                .replace(/(\d+\.) (.*?)(<br>|<\/p>)/g, '<li style="list-style-type: decimal; margin-left: 1.2rem;"><strong>$1</strong> $2</li>$3')
+                .replace(/(\*) (.*?)(<br>|<\/p>)/g, '<li style="list-style-type: disc; margin-left: 1.2rem;">$2</li>$3');
+        }
+
+        // Inizializzazione
+        const params = getUrlParams();
+        if (params.res) {
+            const content = document.getElementById('result-content');
+            content.innerHTML = `<p>${formatMarkdown(decodeURIComponent(params.res))}</p>`;
+        }
+    </script>
+</body>
+</html>
