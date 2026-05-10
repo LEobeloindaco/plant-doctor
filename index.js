@@ -1,5 +1,11 @@
 export async function ai_edge_gallery_get_result(data) {
-    // Inserisci qui la logica per istruire l'app ad aprire la tua WebView
-    // Ad esempio restituendo l'URL o un oggetto JSON specifico
-    return "https://leobeloindaco.github.io/plant-doctor/"; 
+    // Codifichiamo il parametro data per passarlo in modo sicuro tramite URL
+    const encodedData = encodeURIComponent(data || "{}");
+    
+    // Restituiamo il formato JSON corretto per istruire la Gallery ad aprire una Webview
+    return JSON.stringify({
+        webview: {
+            url: `https://leobeloindaco.github.io/plant-doctor/?data=${encodedData}`
+        }
+    });
 }
