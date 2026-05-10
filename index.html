@@ -1,130 +1,260 @@
 <!DOCTYPE html>
 <html lang="it">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Plant Doctor</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Plant Doctor - Gemma 4 Skill</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #60ad5e;
+            --primary-dark: #005005;
+            --bg-color: #f4f9f4;
+            --card-bg: #ffffff;
+            --text-main: #1a3c20;
+            --text-muted: #5c7c61;
+        }
 
         body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 2rem 1rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            margin: 0.5rem 0 0 0;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem 1.5rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        textarea {
+            width: 100%;
+            border: 2px solid #e0ebe0;
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+
+        #result-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(46, 125, 50, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-content h3 {
+            color: var(--primary-dark);
+            margin-top: 0;
+        }
+        
+        .markdown-content p {
+            line-height: 1.6;
         }
     </style>
 </head>
+<body>
 
-<body class="bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen p-4">
+    <header>
+        <h1>🌿 Plant Doctor</h1>
+        <p class="subtitle">Il tuo botanico personale potenziato da Gemma 4</p>
+    </header>
 
-    <div class="max-w-xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div class="bg-green-600 p-6 text-white flex items-center gap-3">
-            <i data-lucide="leaf" class="w-8 h-8"></i>
-            <div>
-                <h1 class="text-2xl font-bold">🌱 Plant Doctor</h1>
-                <p class="text-xs">Gemma 4 Vision</p>
+    <main>
+        <!-- User Input Section -->
+        <div class="card">
+            <div class="input-group">
+                <label for="plant-symptoms">Descrivi i sintomi della pianta:</label>
+                <textarea id="plant-symptoms" placeholder="Es: Le foglie del mio ficus stanno diventando gialle e cadono, specialmente alla base..."></textarea>
+                <!-- In a real skill, the image might be handled natively by the app, but we add a prompt button here -->
+                <button onclick="requestAnalysis()">Analizza con Gemma</button>
             </div>
         </div>
 
-        <div class="p-6" id="content">
-            <div class="text-center py-12">
-                <p class="text-xl font-bold text-green-700">Pronto per l'analisi</p>
+        <!-- Loading Indicator -->
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Gemma sta analizzando la tua pianta...</div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result-container" class="card">
+            <div class="markdown-content" id="result-content">
+                <!-- Result will be injected here -->
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        lucide.createIcons();
+        // Funzione per richiedere l'analisi. A seconda di come è implementata l'app AI Edge Gallery, 
+        // potrebbe inviare un messaggio al layer nativo Android.
+        function requestAnalysis() {
+            const symptoms = document.getElementById('plant-symptoms').value;
+            if (!symptoms.trim()) {
+                alert("Per favore, inserisci i sintomi della tua pianta.");
+                return;
+            }
 
-        // Logica principale per processare i dati
-        const processData = (rawData) => {
-            const content = document.getElementById('content');
+            // Mostra il caricamento
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Qui dovresti chiamare l'interfaccia nativa. Ad esempio:
+            if (window.AndroidInterface && window.AndroidInterface.processPrompt) {
+                // Modello di prompt per Gemma
+                const prompt = `Sei un botanico esperto ("Plant Doctor"). L'utente ti descrive i seguenti sintomi di una pianta: "${symptoms}". 
+                Fornisci una possibile diagnosi, le cause probabili e una lista di cure o azioni correttive consigliate. Rispondi in modo chiaro, empatico e ben strutturato.`;
+                
+                window.AndroidInterface.processPrompt(prompt);
+            } else {
+                // Simulazione per scopi di sviluppo se l'interfaccia nativa non è presente
+                setTimeout(() => {
+                    ai_edge_gallery_get_result("Sulla base dei sintomi descritti, sembra che il tuo Ficus stia subendo uno stress idrico, probabilmente causato da **eccessiva irrigazione** o **scarso drenaggio**.\n\n### Consigli di Cura:\n1. Sospendi le innaffiature finché i primi 5 cm di terreno non sono asciutti.\n2. Controlla che il vaso abbia i fori di drenaggio.\n3. Assicurati che la pianta riceva luce indiretta brillante.");
+                }, 2000);
+            }
+        }
+
+        // QUESTA È LA FUNZIONE CRITICA: Deve essere esposta sull'oggetto window per 
+        // permettere all'app nativa di iniettare il risultato.
+        window.ai_edge_gallery_get_result = function(resultText) {
+            // Nascondi caricamento
+            document.getElementById('loading').style.display = 'none';
             
-            try {
-                const data = typeof rawData === 'string' ? JSON.parse(rawData) : (rawData || {});
-                const imageUrl = data.image_url;
-                const analysis = data.analysis;
-
-                if (analysis) {
-                    showResults(imageUrl, analysis);
-                } else if (imageUrl) {
-                    content.innerHTML = `
-                        <div class="space-y-6">
-                            <img src="${imageUrl}" class="w-full rounded-3xl shadow-md" alt="Pianta">
-                            <div class="p-6 bg-yellow-50 rounded-2xl text-center text-yellow-800">
-                                <p>In attesa dell'analisi da parte di Gemma...</p>
-                            </div>
-                        </div>`;
-                }
-            } catch (e) {
-                content.innerHTML = `<div class="p-8 text-red-600 text-center">Errore caricamento dati: ${e.message}</div>`;
-            }
+            // Mostra contenitore risultato
+            const resultContainer = document.getElementById('result-container');
+            const resultContent = document.getElementById('result-content');
+            
+            // Format base text (convert newlines to <br> for simple HTML display)
+            // In a production app, you might want to use a markdown parser library
+            const formattedText = resultText
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/### (.*?)(<br>|<\/p>)/g, '<h3>$1</h3>$2');
+            
+            resultContent.innerHTML = `<p>${formattedText}</p>`;
+            resultContainer.style.display = 'block';
         };
-
-        // Funzione globale richiesta dall'app Edge Gallery
-        window.ai_edge_gallery_get_result = async (rawData) => {
-            processData(rawData);
-            return JSON.stringify({ result: "success" });
+        
+        // Esposizione di una funzione per ricevere eventuali errori dal modello
+        window.ai_edge_gallery_on_error = function(errorMessage) {
+            document.getElementById('loading').style.display = 'none';
+            const resultContent = document.getElementById('result-content');
+            resultContent.innerHTML = `<p style="color: red;"><strong>Errore:</strong> ${errorMessage}</p>`;
+            document.getElementById('result-container').style.display = 'block';
         };
-
-        // Fallback: Eseguiamo la logica non appena la pagina viene caricata, leggendo l'URL
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const dataFromUrl = urlParams.get('data');
-            if (dataFromUrl) {
-                processData(dataFromUrl);
-            }
-        };
-
-        function showResults(imageUrl, data) {
-            const html = `
-                <div class="space-y-6">
-                    <img src="${imageUrl}" class="w-full rounded-3xl shadow-md mb-4" alt="Pianta">
-                    <div class="flex gap-4">
-                        <div class="flex-1 bg-gray-50 rounded-2xl p-6 text-center">
-                            <p class="text-xs uppercase text-gray-500">Salute</p>
-                            <p class="text-6xl font-black text-green-600">${data.health_score || 0}</p>
-                        </div>
-                        <div id="urgency-badge" class="flex-1 rounded-2xl p-6 border text-center ${getUrgencyClass(data.urgency)}">
-                            <p class="text-xs uppercase text-gray-500">Urgenza</p>
-                            <p class="text-3xl font-bold">${(data.urgency || "media").toUpperCase()}</p>
-                        </div>
-                    </div>
-                    <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-100">
-                        <h3 class="font-bold mb-2 flex items-center gap-2 text-green-800">
-                            <i data-lucide="activity" class="w-5 h-5"></i> Diagnosi
-                        </h3>
-                        <p class="text-gray-700 leading-relaxed">${data.diagnosis}</p>
-                    </div>
-                    <div>
-                        <h3 class="font-bold mb-3 flex items-center gap-2 text-gray-800">
-                            <i data-lucide="clipboard-list" class="w-5 h-5"></i> Piano di cura
-                        </h3>
-                        <ul id="tips-list" class="space-y-3"></ul>
-                    </div>
-                </div>
-            `;
-            document.getElementById('content').innerHTML = html;
-
-            const tipsList = document.getElementById('tips-list');
-            (data.tips || []).forEach(t => {
-                const li = document.createElement('li');
-                li.className = "bg-white p-4 rounded-2xl flex gap-3 shadow-sm border border-gray-100";
-                li.innerHTML = `<i data-lucide="check-circle" class="text-green-500 w-5 h-5"></i><span class="text-gray-700">${t}</span>`;
-                tipsList.appendChild(li);
-            });
-            lucide.createIcons();
-        }
-
-        function getUrgencyClass(urgency) {
-            switch(urgency?.toLowerCase()) {
-                case 'alta': return 'bg-red-50 border-red-200 text-red-700';
-                case 'media': return 'bg-orange-50 border-orange-200 text-orange-700';
-                default: return 'bg-green-50 border-green-200 text-green-700';
-            }
-        }
     </script>
 </body>
-
 </html>
