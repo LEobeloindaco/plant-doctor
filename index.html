@@ -17,15 +17,14 @@
         <div class="bg-green-600 p-6 text-white flex items-center gap-3">
             <i data-lucide="leaf" class="w-8 h-8"></i>
             <div>
-                <h1 class="text-2xl font-bold">Plant Doctor</h1>
-                <p class="text-xs opacity-90">Gemma 4 Vision</p>
+                <h1 class="text-2xl font-bold">🌱 Plant Doctor</h1>
+                <p class="text-xs">Gemma 4 Vision</p>
             </div>
         </div>
 
         <div class="p-6" id="content">
-            <div class="text-center py-12 text-green-700">
-                <p class="text-xl font-bold">Plant Doctor pronto</p>
-                <p class="text-sm mt-2">Invia una foto per iniziare l'analisi</p>
+            <div class="text-center py-12">
+                <p class="text-xl font-bold text-green-700">Pronto per l'analisi</p>
             </div>
         </div>
     </div>
@@ -33,51 +32,51 @@
     <script>
         lucide.createIcons();
 
+        // Funzione principale chiamata da Edge Gallery
         window.ai_edge_gallery_get_result = async (rawData) => {
             const content = document.getElementById('content');
-            content.innerHTML = `<div class="text-center py-12"><div class="animate-spin w-12 h-12 border-4 border-green-300 border-t-green-600 rounded-full mx-auto mb-4"></div><p>Caricamento...</p></div>`;
-
+            
             try {
                 const data = JSON.parse(rawData || "{}");
                 const imageUrl = data.image_url || data.image;
 
-                if (!imageUrl) throw new Error("Nessuna immagine");
-
-                // Mostra subito l'immagine (senza fetch)
-                content.innerHTML = `
-                    <div class="space-y-6">
-                        <img src="${imageUrl}" class="w-full rounded-3xl shadow-md" alt="Pianta">
-                        <button onclick="startAnalysis('${imageUrl}')" 
-                                class="w-full py-5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-3xl text-lg active:scale-95 transition-all">
-                            🔍 Analizza con Gemma
-                        </button>
-                    </div>`;
-
+                if (imageUrl) {
+                    content.innerHTML = `
+                        <div class="space-y-6">
+                            <img src="${imageUrl}" class="w-full rounded-3xl shadow-md" alt="Pianta">
+                            <button onclick="analyzePlant('${imageUrl}')" 
+                                    class="w-full py-5 bg-green-600 text-white font-bold rounded-3xl text-lg">
+                                🔍 AVVIA ANALISI
+                            </button>
+                        </div>`;
+                }
             } catch (e) {
-                content.innerHTML = `<div class="p-8 text-center text-red-600">Errore: ${e.message}</div>`;
+                content.innerHTML = `<div class="p-8 text-red-600 text-center">Errore caricamento foto</div>`;
             }
         };
 
-        async function startAnalysis(imageUrl) {
+        async function analyzePlant(imageUrl) {
             const content = document.getElementById('content');
-            content.innerHTML = `<div class="text-center py-12"><div class="animate-spin w-12 h-12 border-4 border-green-300 border-t-green-600 rounded-full mx-auto mb-4"></div><p class="text-green-800">Analisi in corso con Ollama...</p></div>`;
+            content.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="animate-spin w-12 h-12 border-4 border-green-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
+                    <p class="text-green-800 font-medium">Analisi in corso con Gemma...</p>
+                </div>`;
 
             try {
-                // Prova a convertire in base64 (con fallback)
                 const base64 = await urlToBase64(imageUrl);
 
-                const prompt = `Sei Plant Doctor. Analizza SOLO con JSON:
-
+                const prompt = `Analizza questa pianta e rispondi SOLO con JSON valido:
 {
   "health_score": numero 0-100,
   "urgency": "bassa"|"media"|"alta",
   "diagnosis": "diagnosi in italiano",
-  "tips": ["consiglio1", "consiglio2", "consiglio3"]
+  "tips": ["consiglio 1", "consiglio 2", "consiglio 3"]
 }`;
 
                 const res = await fetch("http://localhost:11434/api/generate", {
                     method: "POST",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: "gemma-4-e2b-it",
                         prompt: prompt,
@@ -90,61 +89,53 @@
                 const ollama = await res.json();
                 const result = JSON.parse(ollama.response.trim());
 
-                renderResults(result);
-
+                showResults(result);
             } catch (e) {
-                content.innerHTML = `
-                    <div class="p-8 text-red-600 text-center">
-                        <p class="font-bold">Errore durante l'analisi</p>
-                        <p class="text-sm mt-3">${e.message}</p>
-                        <p class="text-xs mt-4">Controlla che Ollama sia attivo su http://localhost:11434</p>
-                    </div>`;
+                content.innerHTML = `<div class="p-8 text-red-600 text-center">Errore Ollama<br>${e.message}</div>`;
             }
         }
 
         async function urlToBase64(url) {
-            const response = await fetch(url, { mode: 'cors' });
-            const blob = await response.blob();
-            return new Promise((resolve, reject) => {
+            const r = await fetch(url);
+            const blob = await r.blob();
+            return new Promise(res => {
                 const reader = new FileReader();
-                reader.onload = () => resolve(reader.result.split(',')[1]);
-                reader.onerror = reject;
+                reader.onload = () => res(reader.result.split(',')[1]);
                 reader.readAsDataURL(blob);
             });
         }
 
-        function renderResults(data) {
-            // (stesso codice di prima per mostrare salute, diagnosi e consigli)
+        function showResults(data) {
             const html = `
                 <div class="space-y-6">
                     <div class="flex gap-4">
                         <div class="flex-1 bg-gray-50 rounded-2xl p-6 text-center">
                             <p class="text-xs uppercase text-gray-500">Salute</p>
-                            <p class="text-6xl font-black text-green-600">${data.health_score || 70}</p>
+                            <p class="text-6xl font-black text-green-600">${data.health_score || 65}</p>
                         </div>
-                        <div id="urgency" class="flex-1 rounded-2xl p-6 border text-center">
+                        <div id="urgency-badge" class="flex-1 rounded-2xl p-6 border text-center">
                             <p class="text-xs uppercase text-gray-500">Urgenza</p>
-                            <p class="text-3xl font-bold">${(data.urgency || 'media').toUpperCase()}</p>
+                            <p class="text-3xl font-bold">${(data.urgency || "media").toUpperCase()}</p>
                         </div>
                     </div>
                     <div class="bg-green-50 p-6 rounded-2xl">
-                        <h3 class="font-bold mb-3">Diagnosi</h3>
+                        <h3 class="font-bold mb-2">Diagnosi</h3>
                         <p class="text-gray-700">${data.diagnosis}</p>
                     </div>
                     <div>
                         <h3 class="font-bold mb-3">Piano di cura</h3>
-                        <ul id="tips" class="space-y-3"></ul>
+                        <ul id="tips-list" class="space-y-3"></ul>
                     </div>
                 </div>
             `;
             document.getElementById('content').innerHTML = html;
 
-            const tipsList = document.getElementById('tips');
-            (data.tips || []).forEach(tip => {
+            const tips = document.getElementById('tips-list');
+            (data.tips || []).forEach(t => {
                 const li = document.createElement('li');
-                li.className = "flex gap-3 bg-white p-4 rounded-2xl";
-                li.innerHTML = `<i data-lucide="check-circle" class="text-green-500 mt-1"></i><span>${tip}</span>`;
-                tipsList.appendChild(li);
+                li.className = "bg-white p-4 rounded-2xl flex gap-3";
+                li.innerHTML = `<i data-lucide="check-circle" class="text-green-500"></i><span>${t}</span>`;
+                tips.appendChild(li);
             });
             lucide.createIcons();
         }
