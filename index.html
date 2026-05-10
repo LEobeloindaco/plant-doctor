@@ -1,28 +1,295 @@
 <!DOCTYPE html>
-<html>
+<html lang="it">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Doctor - Gemma 4 Skill</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2e7d32;
+            --primary-light: #60ad5e;
+            --primary-dark: #005005;
+            --bg-color: #f4f9f4;
+            --card-bg: #ffffff;
+            --text-main: #1a3c20;
+            --text-muted: #5c7c61;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 2rem 1rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            margin: 0.5rem 0 0 0;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem 1.5rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        textarea {
+            width: 100%;
+            border: 2px solid #e0ebe0;
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+        }
+
+        button:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+
+        #result-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(46, 125, 50, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-content h3 {
+            color: var(--primary-dark);
+            margin-top: 0;
+        }
+        
+        .markdown-content p {
+            line-height: 1.6;
+        }
+
+        .tabs {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            margin: 1.5rem auto -0.5rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab:not(.active):hover {
+            background: rgba(96, 173, 94, 0.1);
+            color: var(--primary-dark);
+        }
+    </style>
 </head>
 <body>
+
+    <header>
+        <h1>🌿 Plant Doctor</h1>
+        <p class="subtitle">Il tuo botanico personale potenziato da Gemma 4</p>
+    </header>
+
+    <div class="tabs">
+        <a href="index.html" class="tab active">✏️ Analisi Testuale</a>
+        <a href="webview.html" class="tab">📷 Analisi Visiva</a>
+    </div>
+
+    <main>
+        <!-- User Input Section -->
+        <div class="card">
+            <div class="input-group">
+                <label for="plant-symptoms">Descrivi i sintomi della pianta:</label>
+                <textarea id="plant-symptoms" placeholder="Es: Le foglie del mio ficus stanno diventando gialle e cadono, specialmente alla base..."></textarea>
+                <!-- In a real skill, the image might be handled natively by the app, but we add a prompt button here -->
+                <button onclick="requestAnalysis()">Analizza con Gemma</button>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Gemma sta analizzando la tua pianta...</div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result-container" class="card">
+            <div class="markdown-content" id="result-content">
+                <!-- Result will be injected here -->
+            </div>
+        </div>
+    </main>
+
     <script>
-        /**
-         * Questo è il file "Bridge" (Testa di ponte).
-         * Riceve i dati dal modello Gemma e istruisce l'app ad aprire la WebView.
-         */
-        window['ai_edge_gallery_get_result'] = async (data) => {
-            try {
-                // Restituiamo un JSON che indica all'app di caricare la nostra WebView personalizzata
-                // Passiamo il risultato di Gemma come parametro nell'URL
-                return JSON.stringify({
-                    result: data, // Testo visualizzato se la webview fallisce
-                    webview: {
-                        url: "webview.html?res=" + encodeURIComponent(data),
-                        aspectRatio: 1.2 // Rapporto d'aspetto della finestra in chat
-                    }
-                });
-            } catch (e) {
-                return JSON.stringify({ error: e.message });
+        // Funzione per richiedere l'analisi. A seconda di come è implementata l'app AI Edge Gallery, 
+        // potrebbe inviare un messaggio al layer nativo Android.
+        function requestAnalysis() {
+            const symptoms = document.getElementById('plant-symptoms').value;
+            if (!symptoms.trim()) {
+                alert("Per favore, inserisci i sintomi della tua pianta.");
+                return;
             }
+
+            // Mostra il caricamento
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Qui dovresti chiamare l'interfaccia nativa. Ad esempio:
+            if (window.AndroidInterface && window.AndroidInterface.processPrompt) {
+                // Modello di prompt per Gemma
+                const prompt = `Sei un botanico esperto ("Plant Doctor"). L'utente ti descrive i seguenti sintomi di una pianta: "${symptoms}". 
+                Fornisci una possibile diagnosi, le cause probabili e una lista di cure o azioni correttive consigliate. Rispondi in modo chiaro, empatico e ben strutturato.`;
+                
+                window.AndroidInterface.processPrompt(prompt);
+            } else {
+                // Simulazione per scopi di sviluppo se l'interfaccia nativa non è presente
+                setTimeout(() => {
+                    ai_edge_gallery_get_result("Sulla base dei sintomi descritti, sembra che il tuo Ficus stia subendo uno stress idrico, probabilmente causato da **eccessiva irrigazione** o **scarso drenaggio**.\n\n### Consigli di Cura:\n1. Sospendi le innaffiature finché i primi 5 cm di terreno non sono asciutti.\n2. Controlla che il vaso abbia i fori di drenaggio.\n3. Assicurati che la pianta riceva luce indiretta brillante.");
+                }, 2000);
+            }
+        }
+
+        // QUESTA È LA FUNZIONE CRITICA: Deve essere esposta sull'oggetto window per 
+        // permettere all'app nativa di iniettare il risultato.
+        window.ai_edge_gallery_get_result = function(resultText) {
+            // Nascondi caricamento
+            document.getElementById('loading').style.display = 'none';
+            
+            // Mostra contenitore risultato
+            const resultContainer = document.getElementById('result-container');
+            const resultContent = document.getElementById('result-content');
+            
+            // Format base text (convert newlines to <br> for simple HTML display)
+            // In a production app, you might want to use a markdown parser library
+            const formattedText = resultText
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/### (.*?)(<br>|<\/p>)/g, '<h3>$1</h3>$2');
+            
+            resultContent.innerHTML = `<p>${formattedText}</p>`;
+            resultContainer.style.display = 'block';
+        };
+        
+        // Esposizione di una funzione per ricevere eventuali errori dal modello
+        window.ai_edge_gallery_on_error = function(errorMessage) {
+            document.getElementById('loading').style.display = 'none';
+            const resultContent = document.getElementById('result-content');
+            resultContent.innerHTML = `<p style="color: red;"><strong>Errore:</strong> ${errorMessage}</p>`;
+            document.getElementById('result-container').style.display = 'block';
         };
     </script>
 </body>
