@@ -199,6 +199,37 @@
         .markdown-content strong {
             color: var(--accent);
         }
+
+        .tabs {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+            margin: 1.5rem auto -0.5rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab:not(.active):hover {
+            background: rgba(96, 173, 94, 0.1);
+            color: var(--primary-dark);
+        }
     </style>
 </head>
 <body>
@@ -207,6 +238,11 @@
         <h1>🌿 Plant Doctor</h1>
         <p class="subtitle">Analisi visiva avanzata con intelligenza artificiale</p>
     </header>
+
+    <div class="tabs">
+        <a href="index.html" class="tab">✏️ Analisi Testuale</a>
+        <a href="webview.html" class="tab active">📷 Analisi Visiva</a>
+    </div>
 
     <main>
         <!-- User Input Section -->
