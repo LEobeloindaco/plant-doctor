@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,13 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
     </style>
 </head>
+
 <body class="bg-gradient-to-br from-green-50 to-emerald-100 min-h-screen p-4">
 
     <div class="max-w-xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
@@ -35,110 +40,78 @@
         // Funzione principale chiamata da Edge Gallery
         window.ai_edge_gallery_get_result = async (rawData) => {
             const content = document.getElementById('content');
-            
-            try {
-                const data = JSON.parse(rawData || "{}");
-                const imageUrl = data.image_url || data.image;
 
-                if (imageUrl) {
+            try {
+                const data = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+                const imageUrl = data.image_url;
+                const analysis = data.analysis;
+
+                if (analysis) {
+                    // Se Gemma ha già fatto l'analisi, mostriamo i risultati direttamente
+                    showResults(imageUrl, analysis);
+                } else if (imageUrl) {
+                    // Fallback se abbiamo solo l'immagine
                     content.innerHTML = `
                         <div class="space-y-6">
                             <img src="${imageUrl}" class="w-full rounded-3xl shadow-md" alt="Pianta">
-                            <button onclick="analyzePlant('${imageUrl}')" 
-                                    class="w-full py-5 bg-green-600 text-white font-bold rounded-3xl text-lg">
-                                🔍 AVVIA ANALISI
-                            </button>
+                            <div class="p-6 bg-yellow-50 rounded-2xl text-center text-yellow-800">
+                                <p>In attesa dell'analisi da parte di Gemma...</p>
+                            </div>
                         </div>`;
                 }
             } catch (e) {
-                content.innerHTML = `<div class="p-8 text-red-600 text-center">Errore caricamento foto</div>`;
+                content.innerHTML = `<div class="p-8 text-red-600 text-center">Errore caricamento dati: ${e.message}</div>`;
             }
         };
 
-        async function analyzePlant(imageUrl) {
-            const content = document.getElementById('content');
-            content.innerHTML = `
-                <div class="text-center py-12">
-                    <div class="animate-spin w-12 h-12 border-4 border-green-300 border-t-green-600 rounded-full mx-auto mb-4"></div>
-                    <p class="text-green-800 font-medium">Analisi in corso con Gemma...</p>
-                </div>`;
-
-            try {
-                const base64 = await urlToBase64(imageUrl);
-
-                const prompt = `Analizza questa pianta e rispondi SOLO con JSON valido:
-{
-  "health_score": numero 0-100,
-  "urgency": "bassa"|"media"|"alta",
-  "diagnosis": "diagnosi in italiano",
-  "tips": ["consiglio 1", "consiglio 2", "consiglio 3"]
-}`;
-
-                const res = await fetch("http://localhost:11434/api/generate", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: "gemma-4-e2b-it",
-                        prompt: prompt,
-                        images: [base64],
-                        stream: false,
-                        format: "json"
-                    })
-                });
-
-                const ollama = await res.json();
-                const result = JSON.parse(ollama.response.trim());
-
-                showResults(result);
-            } catch (e) {
-                content.innerHTML = `<div class="p-8 text-red-600 text-center">Errore Ollama<br>${e.message}</div>`;
-            }
-        }
-
-        async function urlToBase64(url) {
-            const r = await fetch(url);
-            const blob = await r.blob();
-            return new Promise(res => {
-                const reader = new FileReader();
-                reader.onload = () => res(reader.result.split(',')[1]);
-                reader.readAsDataURL(blob);
-            });
-        }
-
-        function showResults(data) {
+        function showResults(imageUrl, data) {
             const html = `
                 <div class="space-y-6">
+                    <img src="${imageUrl}" class="w-full rounded-3xl shadow-md mb-4" alt="Pianta">
                     <div class="flex gap-4">
                         <div class="flex-1 bg-gray-50 rounded-2xl p-6 text-center">
                             <p class="text-xs uppercase text-gray-500">Salute</p>
-                            <p class="text-6xl font-black text-green-600">${data.health_score || 65}</p>
+                            <p class="text-6xl font-black text-green-600">${data.health_score || 0}</p>
                         </div>
-                        <div id="urgency-badge" class="flex-1 rounded-2xl p-6 border text-center">
+                        <div id="urgency-badge" class="flex-1 rounded-2xl p-6 border text-center ${getUrgencyClass(data.urgency)}">
                             <p class="text-xs uppercase text-gray-500">Urgenza</p>
                             <p class="text-3xl font-bold">${(data.urgency || "media").toUpperCase()}</p>
                         </div>
                     </div>
-                    <div class="bg-green-50 p-6 rounded-2xl">
-                        <h3 class="font-bold mb-2">Diagnosi</h3>
-                        <p class="text-gray-700">${data.diagnosis}</p>
+                    <div class="bg-green-50 p-6 rounded-2xl shadow-sm border border-green-100">
+                        <h3 class="font-bold mb-2 flex items-center gap-2 text-green-800">
+                            <i data-lucide="activity" class="w-5 h-5"></i> Diagnosi
+                        </h3>
+                        <p class="text-gray-700 leading-relaxed">${data.diagnosis}</p>
                     </div>
                     <div>
-                        <h3 class="font-bold mb-3">Piano di cura</h3>
+                        <h3 class="font-bold mb-3 flex items-center gap-2 text-gray-800">
+                            <i data-lucide="clipboard-list" class="w-5 h-5"></i> Piano di cura
+                        </h3>
                         <ul id="tips-list" class="space-y-3"></ul>
                     </div>
                 </div>
             `;
             document.getElementById('content').innerHTML = html;
 
-            const tips = document.getElementById('tips-list');
+            const tipsList = document.getElementById('tips-list');
             (data.tips || []).forEach(t => {
                 const li = document.createElement('li');
-                li.className = "bg-white p-4 rounded-2xl flex gap-3";
-                li.innerHTML = `<i data-lucide="check-circle" class="text-green-500"></i><span>${t}</span>`;
-                tips.appendChild(li);
+                li.className = "bg-white p-4 rounded-2xl flex gap-3 shadow-sm border border-gray-100";
+                li.innerHTML = `<i data-lucide="check-circle" class="text-green-500 w-5 h-5"></i><span class="text-gray-700">${t}</span>`;
+                tipsList.appendChild(li);
             });
             lucide.createIcons();
         }
+
+        function getUrgencyClass(urgency) {
+            switch(urgency?.toLowerCase()) {
+                case 'alta': return 'bg-red-50 border-red-200 text-red-700';
+                case 'media': return 'bg-orange-50 border-orange-200 text-orange-700';
+                default: return 'bg-green-50 border-green-200 text-green-700';
+            }
+        }
     </script>
 </body>
+
 </html>
