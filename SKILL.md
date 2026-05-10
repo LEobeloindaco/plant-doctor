@@ -1,6 +1,6 @@
 ---
 name: plant-doctor
-description: Analizza lo stato di salute delle piante con interfaccia grafica completa su GitHub Pages. Dopodiché scrivi tutto ciò che sai sulla condizione della pianta e se riesci mostra l'interfaccia html sul dispositivo che sto utilizzando.
+description: Analizza lo stato di salute delle piante mostrando una ricca interfaccia grafica nativa. Dopodiché mostra i dettagli dell'analisi (diagnosi, salute, consigli).
 ---
 
 # Plant Doctor
