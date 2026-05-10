@@ -37,12 +37,16 @@
     <script>
         lucide.createIcons();
 
-        // Funzione principale chiamata da Edge Gallery
-        window.ai_edge_gallery_get_result = async (rawData) => {
+        // Eseguiamo la logica non appena la pagina viene caricata nella WebView
+        window.onload = () => {
             const content = document.getElementById('content');
-
+            
             try {
-                const data = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
+                // Recuperiamo i dati passati da index.js tramite l'URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const rawData = urlParams.get('data');
+                
+                const data = rawData ? JSON.parse(rawData) : {};
                 const imageUrl = data.image_url;
                 const analysis = data.analysis;
 
