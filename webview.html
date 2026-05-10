@@ -8,186 +8,315 @@
     <style>
         :root {
             --bg-color: #121813;
-            --surface: rgba(28, 40, 30, 0.85);
-            --surface-border: rgba(80, 110, 85, 0.3);
+            --surface: rgba(28, 40, 30, 0.95);
+            --surface-border: rgba(80, 110, 85, 0.4);
             --primary: #d96c06;
-            --primary-hover: #ff8b20;
             --text-main: #e8ede9;
             --text-muted: #8a9c8f;
+            --risk-low: #5e8a64;
+            --risk-med: #d9a406;
+            --risk-high: #d93f06;
         }
 
         body {
             font-family: 'Outfit', sans-serif;
             margin: 0;
             padding: 10px;
-            background-color: transparent; /* Importante per l'integrazione in chat */
+            background-color: transparent;
             color: var(--text-main);
             overflow-x: hidden;
         }
 
-        .container {
-            width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
         .card {
             background: var(--surface);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--surface-border);
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
 
-        .header-mini {
+        /* --- WIDGETS HEADER --- */
+        .dashboard-header {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--surface-border);
-            padding-bottom: 10px;
+            padding-bottom: 15px;
         }
 
-        .logo-mini {
-            background: var(--primary);
-            padding: 5px;
-            border-radius: 8px;
-            width: 24px;
-            height: 24px;
+        /* Compass Widget */
+        .compass-widget {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: rgba(0,0,0,0.3);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
-
-        .logo-mini svg {
-            width: 16px;
-            height: 16px;
-            fill: #fff;
+        .compass-dial {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 0.1s ease-out;
         }
-
-        h2 {
-            margin: 0;
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .compass-dial::before {
+            content: 'N';
+            position: absolute;
+            top: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-weight: bold;
             color: var(--primary);
+            font-family: 'Roboto Mono', monospace;
+        }
+        .compass-needle {
+            width: 4px;
+            height: 40px;
+            background: linear-gradient(to bottom, var(--primary) 50%, #fff 50%);
+            border-radius: 2px;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.1s ease-out;
         }
 
-        /* Result Styling */
+        /* Risk Indicator */
+        .risk-widget {
+            text-align: right;
+            font-family: 'Roboto Mono', monospace;
+        }
+        .risk-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .risk-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 4px;
+            padding: 2px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        /* --- MARKDOWN CONTENT --- */
         .markdown-content {
             line-height: 1.6;
             font-size: 0.95rem;
         }
-
         .markdown-content h3 {
             color: #fff;
-            margin: 1.2rem 0 0.5rem;
+            margin: 1.5rem 0 1rem;
             font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-left: 3px solid var(--primary);
+            padding-left: 10px;
         }
-        
         .markdown-content p { margin-bottom: 1rem; }
         .markdown-content strong { color: var(--primary); }
 
-        .markdown-content ul {
-            padding-left: 1.2rem;
-            margin-bottom: 1rem;
+        /* Interactive Checklist */
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1.5rem 0;
         }
-
-        .markdown-content li { margin-bottom: 0.4rem; }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .checklist-item:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: var(--surface-border);
+        }
+        .checklist-item input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--text-muted);
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s;
+        }
+        .checklist-item input[type="checkbox"]:checked {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .checklist-item input[type="checkbox"]:checked::after {
+            content: '✓';
+            position: absolute;
+            color: #121813;
+            font-weight: bold;
+            font-size: 14px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .checklist-item span {
+            transition: color 0.2s, text-decoration 0.2s;
+        }
+        .checklist-item input[type="checkbox"]:checked + span {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
 
         blockquote {
             border-left: 3px solid var(--primary);
-            padding-left: 1rem;
-            margin: 1rem 0;
+            margin: 1.5rem 0;
             color: var(--text-muted);
             font-style: italic;
             background: rgba(217, 108, 6, 0.05);
-            padding: 10px 15px;
-            border-radius: 0 10px 10px 0;
-        }
-
-        /* Footer Interaction */
-        .footer-tools {
-            margin-top: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        .btn-action {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--surface-border);
-            color: var(--text-main);
-            padding: 5px 12px;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-action:hover {
-            background: var(--primary);
-            border-color: var(--primary);
+            padding: 15px;
+            border-radius: 0 12px 12px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="header-mini">
-                <div class="logo-mini">
-                    <svg viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2zm0 4.5l6.5 13.5H5.5L12 6.5z"/></svg>
-                </div>
-                <h2>Pathfinder Report</h2>
+    <div class="card">
+        <!-- Dashboard Header: Compass and Risk Level -->
+        <div class="dashboard-header">
+            <div class="compass-widget" id="compass">
+                <div class="compass-dial"></div>
+                <div class="compass-needle" id="needle"></div>
             </div>
+            <div class="risk-widget">
+                <div class="risk-label">Livello di Rischio</div>
+                <div class="risk-value" id="risk-badge" style="background: var(--surface-border); color: var(--text-main);">CALCOLO...</div>
+            </div>
+        </div>
 
-            <div id="result-content" class="markdown-content">
-                <!-- Injected via JS -->
-                <p>In attesa di dati ambientali...</p>
-            </div>
-
-            <div class="footer-tools">
-                <span>COORD: 45.4642° N, 9.1900° E</span>
-                <button class="btn-action" onclick="window.print()">Salva Report</button>
-            </div>
+        <div id="result-content" class="markdown-content">
+            <p>Sincronizzazione dati satellitari in corso...</p>
         </div>
     </div>
 
     <script>
-        // Funzione per estrarre i parametri dall'URL
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                res: params.get('res')
-            };
+        // 1. RISK CALCULATION
+        function calculateRiskLevel(text) {
+            const t = text.toLowerCase();
+            const criticalWords = ['emergenza', 'ferita', 'sangue', 'perso', 'aiuto', 'pericolo', 'notte', 'soccorso', 'ipotermia', 'orso', 'morso'];
+            const medWords = ['attenzione', 'difficile', 'rischioso', 'pioggia', 'temporale', 'freddo', 'scivoloso'];
+            
+            let isCritical = criticalWords.some(word => t.includes(word));
+            let isMed = medWords.some(word => t.includes(word));
+
+            const badge = document.getElementById('risk-badge');
+            if (isCritical) {
+                badge.textContent = 'CRITICO';
+                badge.style.background = 'var(--risk-high)';
+                badge.style.color = '#fff';
+            } else if (isMed) {
+                badge.textContent = 'ATTENZIONE';
+                badge.style.background = 'var(--risk-med)';
+                badge.style.color = '#121813';
+            } else {
+                badge.textContent = 'NORMALE';
+                badge.style.background = 'var(--risk-low)';
+                badge.style.color = '#fff';
+            }
         }
 
+        // 2. MARKDOWN & CHECKLIST PARSER
         function formatMarkdown(text) {
             if (!text) return "Nessun dato ricevuto.";
             
-            return text
+            // Handle Paragraphs and Bold
+            let html = text
                 .replace(/\n\n/g, '</p><p>')
-                .replace(/\n/g, '<br>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/### (.*?)(<br>|<\/p>)/g, '<h3>$1</h3>$2')
-                .replace(/> (.*?)(<br>|<\/p>)/g, '<blockquote>$1</blockquote>$2')
-                .replace(/(\d+\.) (.*?)(<br>|<\/p>)/g, '<li style="list-style-type: decimal; margin-left: 1.2rem;"><strong>$1</strong> $2</li>$3')
-                .replace(/(\*) (.*?)(<br>|<\/p>)/g, '<li style="list-style-type: disc; margin-left: 1.2rem;">$2</li>$3');
+                .replace(/### (.*?)(<br>|\n|<\/p>)/g, '<h3>$1</h3>$2')
+                .replace(/> (.*?)(<br>|\n|<\/p>)/g, '<blockquote>$1</blockquote>$2');
+
+            // Handle Lists -> Transform into Interactive Checklists
+            // Match lines starting with 1. or * or - 
+            html = html.replace(/(?:^|\n)(?:\d+\.|\*|\-)\s+(.*?)(?=\n|$)/g, function(match, itemText) {
+                return `<li class="checklist-item">
+                            <input type="checkbox">
+                            <span>${itemText.trim()}</span>
+                        </li>`;
+            });
+
+            // Wrap consecutive <li> into a <ul> container
+            html = html.replace(/(<li class="checklist-item">.*?<\/li>)+/g, function(match) {
+                return `<ul class="checklist">${match}</ul>`;
+            });
+            
+            // Clean up rogue newlines
+            html = html.replace(/\n/g, '<br>');
+
+            return html;
         }
 
-        // Inizializzazione
-        const params = getUrlParams();
-        if (params.res) {
-            const content = document.getElementById('result-content');
-            content.innerHTML = `<p>${formatMarkdown(decodeURIComponent(params.res))}</p>`;
+        // 3. INTERACTIVE COMPASS LOGIC
+        function initCompass() {
+            const needle = document.getElementById('needle');
+            
+            // Richiedi i permessi per i sensori su iOS/Android se disponibili
+            if (window.DeviceOrientationEvent) {
+                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
+                window.addEventListener('deviceorientation', handleOrientation, true);
+            } else {
+                // Fallback: Animazione lenta finta se i sensori non sono disponibili
+                simulateCompass();
+            }
+
+            function handleOrientation(event) {
+                let compassHeading = event.webkitCompassHeading || Math.abs(event.alpha - 360);
+                if (compassHeading) {
+                    needle.style.transform = `rotate(${-compassHeading}deg)`;
+                } else {
+                    simulateCompass(); // Fallback se i dati sono null
+                }
+            }
+
+            function simulateCompass() {
+                let angle = 0;
+                setInterval(() => {
+                    angle += (Math.random() - 0.5) * 5; // Piccolo tremolio
+                    needle.style.transform = `rotate(${angle}deg)`;
+                }, 100);
+            }
         }
+
+        // INITIALIZATION
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return { res: params.get('res') };
+        }
+
+        window.onload = () => {
+            initCompass();
+            
+            const params = getUrlParams();
+            let rawText = params.res ? decodeURIComponent(params.res) : null;
+            
+            // Pulizia di stringhe residue di sistema se l'app fa echo del prompt
+            if (rawText && rawText.includes("window.AndroidInterface.processPrompt")) {
+                rawText = "Errore di parsing nell'app: Ricevuto comando JS invece della risposta del modello.";
+            }
+
+            if (rawText) {
+                calculateRiskLevel(rawText);
+                document.getElementById('result-content').innerHTML = `<p>${formatMarkdown(rawText)}</p>`;
+            }
+        };
     </script>
 </body>
 </html>
