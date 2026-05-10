@@ -3,319 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pathfinder WebView</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <title>Plant Doctor - Analisi Visiva</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #121813;
-            --surface: rgba(28, 40, 30, 0.95);
-            --surface-border: rgba(80, 110, 85, 0.4);
-            --primary: #d96c06;
-            --text-main: #e8ede9;
-            --text-muted: #8a9c8f;
-            --risk-low: #5e8a64;
-            --risk-med: #d9a406;
-            --risk-high: #d93f06;
+            --primary: #2e7d32;
+            --primary-light: #60ad5e;
+            --primary-dark: #005005;
+            --bg-color: #f4f9f4;
+            --card-bg: #ffffff;
+            --text-main: #1a3c20;
+            --text-muted: #5c7c61;
+            --accent: #d32f2f;
         }
 
         body {
             font-family: 'Outfit', sans-serif;
             margin: 0;
-            padding: 10px;
-            background-color: transparent;
+            padding: 0;
+            background-color: var(--bg-color);
             color: var(--text-main);
-            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 2rem 1rem;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+        }
+
+        h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        p.subtitle {
+            margin: 0.5rem 0 0 0;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+
+        main {
+            flex: 1;
+            width: 100%;
+            max-width: 600px;
+            padding: 2rem 1.5rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
         .card {
-            background: var(--surface);
-            border: 1px solid var(--surface-border);
+            background: var(--card-bg);
             border-radius: 20px;
             padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
         }
 
-        /* --- WIDGETS HEADER --- */
-        .dashboard-header {
+        .input-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--surface-border);
-            padding-bottom: 15px;
+            flex-direction: column;
+            gap: 0.8rem;
         }
 
-        /* Compass Widget */
-        .compass-widget {
-            position: relative;
-            width: 50px;
-            height: 50px;
-            border: 2px solid var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.3);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        label {
+            font-weight: 600;
+            color: var(--primary-dark);
         }
-        .compass-dial {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            transition: transform 0.1s ease-out;
+
+        input[type="file"] {
+            display: none;
         }
-        .compass-dial::before {
-            content: 'N';
-            position: absolute;
-            top: 2px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 10px;
-            font-weight: bold;
+
+        .file-upload-btn {
+            background: transparent;
             color: var(--primary);
-            font-family: 'Roboto Mono', monospace;
-        }
-        .compass-needle {
-            width: 4px;
-            height: 40px;
-            background: linear-gradient(to bottom, var(--primary) 50%, #fff 50%);
-            border-radius: 2px;
-            position: relative;
-            z-index: 2;
-            transition: transform 0.1s ease-out;
-        }
-
-        /* Risk Indicator */
-        .risk-widget {
-            text-align: right;
-            font-family: 'Roboto Mono', monospace;
-        }
-        .risk-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-        }
-        .risk-value {
+            border: 2px dashed var(--primary-light);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
             font-size: 1.1rem;
-            font-weight: bold;
-            margin-top: 4px;
-            padding: 2px 8px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-
-        /* --- MARKDOWN CONTENT --- */
-        .markdown-content {
-            line-height: 1.6;
-            font-size: 0.95rem;
-        }
-        .markdown-content h3 {
-            color: #fff;
-            margin: 1.5rem 0 1rem;
-            font-size: 1.1rem;
-            border-left: 3px solid var(--primary);
-            padding-left: 10px;
-        }
-        .markdown-content p { margin-bottom: 1rem; }
-        .markdown-content strong { color: var(--primary); }
-
-        /* Interactive Checklist */
-        .checklist {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 1.5rem 0;
-        }
-        .checklist-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 10px;
-            padding: 10px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 8px;
-            border: 1px solid transparent;
-            transition: all 0.2s;
-        }
-        .checklist-item:hover {
-            background: rgba(255,255,255,0.06);
-            border-color: var(--surface-border);
-        }
-        .checklist-item input[type="checkbox"] {
-            appearance: none;
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--text-muted);
-            border-radius: 6px;
-            outline: none;
+            font-weight: 600;
             cursor: pointer;
-            position: relative;
-            flex-shrink: 0;
-            margin-top: 2px;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
-        .checklist-item input[type="checkbox"]:checked {
-            background-color: var(--primary);
+
+        .file-upload-btn:hover {
+            background: rgba(96, 173, 94, 0.1);
             border-color: var(--primary);
         }
-        .checklist-item input[type="checkbox"]:checked::after {
-            content: '✓';
-            position: absolute;
-            color: #121813;
-            font-weight: bold;
-            font-size: 14px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-        .checklist-item span {
-            transition: color 0.2s, text-decoration 0.2s;
-        }
-        .checklist-item input[type="checkbox"]:checked + span {
-            color: var(--text-muted);
-            text-decoration: line-through;
+
+        .image-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
         }
 
-        blockquote {
-            border-left: 3px solid var(--primary);
-            margin: 1.5rem 0;
-            color: var(--text-muted);
-            font-style: italic;
-            background: rgba(217, 108, 6, 0.05);
-            padding: 15px;
-            border-radius: 0 12px 12px 0;
+        img#uploaded-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        canvas#overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        button.primary-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            width: 100%;
+            display: none;
+        }
+
+        button.primary-btn:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        button.primary-btn:active {
+            transform: translateY(0);
+        }
+
+        #result-container {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        #loading {
+            display: none;
+            text-align: center;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 1rem;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(46, 125, 50, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-content h3 {
+            color: var(--primary-dark);
+            margin-top: 0;
+        }
+        
+        .markdown-content p {
+            line-height: 1.6;
+        }
+        
+        .markdown-content strong {
+            color: var(--accent);
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <!-- Dashboard Header: Compass and Risk Level -->
-        <div class="dashboard-header">
-            <div class="compass-widget" id="compass">
-                <div class="compass-dial"></div>
-                <div class="compass-needle" id="needle"></div>
-            </div>
-            <div class="risk-widget">
-                <div class="risk-label">Livello di Rischio</div>
-                <div class="risk-value" id="risk-badge" style="background: var(--surface-border); color: var(--text-main);">CALCOLO...</div>
+
+    <header>
+        <h1>🌿 Plant Doctor</h1>
+        <p class="subtitle">Analisi visiva avanzata con intelligenza artificiale</p>
+    </header>
+
+    <main>
+        <!-- User Input Section -->
+        <div class="card">
+            <div class="input-group">
+                <label>Carica la foto della tua pianta:</label>
+                
+                <label class="file-upload-btn" for="image-upload" id="upload-label">
+                    📷 Clicca per caricare o scattare una foto
+                </label>
+                <input type="file" id="image-upload" accept="image/*" onchange="previewImage(event)">
+
+                <div class="image-container" id="image-container">
+                    <img id="uploaded-image" alt="Pianta caricata">
+                    <canvas id="overlay"></canvas>
+                </div>
+
+                <button class="primary-btn" id="analyze-btn" onclick="requestAnalysis()">Analizza con Gemma Visiva</button>
             </div>
         </div>
 
-        <div id="result-content" class="markdown-content">
-            <p>Sincronizzazione dati satellitari in corso...</p>
+        <!-- Loading Indicator -->
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Scansione delle aree interessate in corso...</div>
         </div>
-    </div>
+
+        <!-- Result Section -->
+        <div id="result-container" class="card">
+            <div class="markdown-content" id="result-content">
+                <!-- Result will be injected here -->
+            </div>
+        </div>
+    </main>
 
     <script>
-        // 1. RISK CALCULATION
-        function calculateRiskLevel(text) {
-            const t = text.toLowerCase();
-            const criticalWords = ['emergenza', 'ferita', 'sangue', 'perso', 'aiuto', 'pericolo', 'notte', 'soccorso', 'ipotermia', 'orso', 'morso'];
-            const medWords = ['attenzione', 'difficile', 'rischioso', 'pioggia', 'temporale', 'freddo', 'scivoloso'];
-            
-            let isCritical = criticalWords.some(word => t.includes(word));
-            let isMed = medWords.some(word => t.includes(word));
-
-            const badge = document.getElementById('risk-badge');
-            if (isCritical) {
-                badge.textContent = 'CRITICO';
-                badge.style.background = 'var(--risk-high)';
-                badge.style.color = '#fff';
-            } else if (isMed) {
-                badge.textContent = 'ATTENZIONE';
-                badge.style.background = 'var(--risk-med)';
-                badge.style.color = '#121813';
-            } else {
-                badge.textContent = 'NORMALE';
-                badge.style.background = 'var(--risk-low)';
-                badge.style.color = '#fff';
+        // Preview the uploaded image
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('uploaded-image');
+                    img.src = e.target.result;
+                    
+                    document.getElementById('image-container').style.display = 'block';
+                    document.getElementById('analyze-btn').style.display = 'block';
+                    document.getElementById('upload-label').style.display = 'none';
+                    
+                    // Clear previous results and canvas
+                    document.getElementById('result-container').style.display = 'none';
+                    const canvas = document.getElementById('overlay');
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+                reader.readAsDataURL(file);
             }
         }
 
-        // 2. MARKDOWN & CHECKLIST PARSER
-        function formatMarkdown(text) {
-            if (!text) return "Nessun dato ricevuto.";
+        // Request analysis
+        function requestAnalysis() {
+            // Show loading
+            document.getElementById('result-container').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            // Clear previous drawings
+            const canvas = document.getElementById('overlay');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Se c'è un'interfaccia nativa, potremmo chiamarla così:
+            if (window.AndroidInterface && window.AndroidInterface.processImagePrompt) {
+                window.AndroidInterface.processImagePrompt("Analizza questa pianta e identifica le aree problematiche restituendo coordinate per cerchiarle.");
+            } else {
+                // Simulazione di una risposta dal modello per il webview
+                setTimeout(() => {
+                    // Supponiamo che il modello restituisca un JSON o dei dati strutturati 
+                    // con le aree da evidenziare e la diagnosi
+                    const mockResponse = {
+                        text: "Ho analizzato l'immagine. Le aree cerchiate in rosso indicano zone con **clorosi marcata** e possibili segni di **attacco fungino** sulle foglie inferiori.\n\n### Consigli di Cura:\n1. Rimuovi le foglie gravemente danneggiate.\n2. Tratta con un fungicida specifico a base di rame.\n3. Assicurati che ci sia un buon ricircolo d'aria tra le foglie.",
+                        areas: [
+                            { x: 0.3, y: 0.4, radius: 0.1 },
+                            { x: 0.6, y: 0.7, radius: 0.08 }
+                        ]
+                    };
+                    
+                    // In a real scenario, ai_edge_gallery_get_result would be called by the native app
+                    window.ai_edge_gallery_get_result(JSON.stringify(mockResponse));
+                }, 2500);
+            }
+        }
+
+        // Draw circles on the canvas
+        function drawCircles(areas) {
+            const canvas = document.getElementById('overlay');
+            const img = document.getElementById('uploaded-image');
             
-            // Handle Paragraphs and Bold
-            let html = text
+            // Match canvas size to image size exactly
+            canvas.width = img.clientWidth;
+            canvas.height = img.clientHeight;
+            
+            const ctx = canvas.getContext('2d');
+            
+            // Set circle styles
+            ctx.strokeStyle = '#d32f2f'; // Red color
+            ctx.lineWidth = 4;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+            ctx.shadowBlur = 4;
+            
+            areas.forEach(area => {
+                const x = area.x * canvas.width;
+                const y = area.y * canvas.height;
+                const radius = area.radius * Math.min(canvas.width, canvas.height);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.stroke();
+                
+                // Add a subtle fill
+                ctx.fillStyle = 'rgba(211, 47, 47, 0.2)';
+                ctx.fill();
+            });
+        }
+
+        // QUESTA È LA FUNZIONE CRITICA esposta per l'app nativa
+        window.ai_edge_gallery_get_result = function(resultString) {
+            document.getElementById('loading').style.display = 'none';
+            
+            let resultData;
+            let resultText = resultString;
+            let areas = [];
+
+            // Try to parse as JSON (in case the model returns structured data with coordinates)
+            try {
+                resultData = JSON.parse(resultString);
+                if (resultData.text) resultText = resultData.text;
+                if (resultData.areas) areas = resultData.areas;
+            } catch (e) {
+                // Not JSON, just normal text
+                console.log("Response is not JSON, treating as plain text");
+            }
+
+            // Mostra contenitore risultato
+            const resultContainer = document.getElementById('result-container');
+            const resultContent = document.getElementById('result-content');
+            
+            // Format base text
+            const formattedText = resultText
                 .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br>')
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/### (.*?)(<br>|\n|<\/p>)/g, '<h3>$1</h3>$2')
-                .replace(/> (.*?)(<br>|\n|<\/p>)/g, '<blockquote>$1</blockquote>$2');
-
-            // Handle Lists -> Transform into Interactive Checklists
-            // Match lines starting with 1. or * or - 
-            html = html.replace(/(?:^|\n)(?:\d+\.|\*|\-)\s+(.*?)(?=\n|$)/g, function(match, itemText) {
-                return `<li class="checklist-item">
-                            <input type="checkbox">
-                            <span>${itemText.trim()}</span>
-                        </li>`;
-            });
-
-            // Wrap consecutive <li> into a <ul> container
-            html = html.replace(/(<li class="checklist-item">.*?<\/li>)+/g, function(match) {
-                return `<ul class="checklist">${match}</ul>`;
-            });
+                .replace(/### (.*?)(<br>|<\/p>)/g, '<h3>$1</h3>$2');
             
-            // Clean up rogue newlines
-            html = html.replace(/\n/g, '<br>');
+            resultContent.innerHTML = `<p>${formattedText}</p>`;
+            resultContainer.style.display = 'block';
 
-            return html;
-        }
-
-        // 3. INTERACTIVE COMPASS LOGIC
-        function initCompass() {
-            const needle = document.getElementById('needle');
-            
-            // Richiedi i permessi per i sensori su iOS/Android se disponibili
-            if (window.DeviceOrientationEvent) {
-                window.addEventListener('deviceorientationabsolute', handleOrientation, true);
-                window.addEventListener('deviceorientation', handleOrientation, true);
-            } else {
-                // Fallback: Animazione lenta finta se i sensori non sono disponibili
-                simulateCompass();
-            }
-
-            function handleOrientation(event) {
-                let compassHeading = event.webkitCompassHeading || Math.abs(event.alpha - 360);
-                if (compassHeading) {
-                    needle.style.transform = `rotate(${-compassHeading}deg)`;
+            // Draw the circles if we have areas
+            if (areas && areas.length > 0) {
+                // Ensure image is fully loaded before drawing
+                const img = document.getElementById('uploaded-image');
+                if (img.complete) {
+                    drawCircles(areas);
                 } else {
-                    simulateCompass(); // Fallback se i dati sono null
+                    img.onload = () => drawCircles(areas);
                 }
             }
-
-            function simulateCompass() {
-                let angle = 0;
-                setInterval(() => {
-                    angle += (Math.random() - 0.5) * 5; // Piccolo tremolio
-                    needle.style.transform = `rotate(${angle}deg)`;
-                }, 100);
-            }
-        }
-
-        // INITIALIZATION
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return { res: params.get('res') };
-        }
-
-        window.onload = () => {
-            initCompass();
+        };
+        
+        // Handle window resize to redraw circles correctly
+        window.addEventListener('resize', () => {
+            // Se abbiamo già mostrato il risultato e ci sono aree (usando un timeout semplice qui per la demo)
+            // L'ideale sarebbe salvare l'ultimo resultData e ridisegnarlo.
+            const canvas = document.getElementById('overlay');
+            const img = document.getElementById('uploaded-image');
             
-            const params = getUrlParams();
-            let rawText = params.res ? decodeURIComponent(params.res) : null;
-            
-            // Pulizia di stringhe residue di sistema se l'app fa echo del prompt
-            if (rawText && rawText.includes("window.AndroidInterface.processPrompt")) {
-                rawText = "Errore di parsing nell'app: Ricevuto comando JS invece della risposta del modello.";
+            if (canvas.width > 0 && img.clientWidth > 0 && document.getElementById('result-container').style.display === 'block') {
+               // Per un'implementazione completa dovremmo memorizzare `areas` globalmente e richiamare drawCircles(areas)
             }
+        });
 
-            if (rawText) {
-                calculateRiskLevel(rawText);
-                document.getElementById('result-content').innerHTML = `<p>${formatMarkdown(rawText)}</p>`;
-            }
+        // Esposizione di una funzione per ricevere eventuali errori dal modello
+        window.ai_edge_gallery_on_error = function(errorMessage) {
+            document.getElementById('loading').style.display = 'none';
+            const resultContent = document.getElementById('result-content');
+            resultContent.innerHTML = `<p style="color: red;"><strong>Errore:</strong> ${errorMessage}</p>`;
+            document.getElementById('result-container').style.display = 'block';
         };
     </script>
 </body>
