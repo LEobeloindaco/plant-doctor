@@ -1,4 +1,4 @@
-export async function ai_edge_gallery_get_result(data) {
+window.ai_edge_gallery_get_result = async function(data) {
     // Codifichiamo il parametro data per passarlo in modo sicuro tramite URL
     const encodedData = encodeURIComponent(data || "{}");
     
@@ -8,4 +8,4 @@ export async function ai_edge_gallery_get_result(data) {
             url: `https://leobeloindaco.github.io/plant-doctor/?data=${encodedData}`
         }
     });
-}
+};
